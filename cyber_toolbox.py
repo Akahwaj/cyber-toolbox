@@ -1,7 +1,24 @@
-import socket
 import hashlib
-import re
 import ipaddress
+import os
+import re
+import socket
+
+
+COMMON_PORTS = {
+    21: "FTP",
+    22: "SSH",
+    23: "Telnet",
+    25: "SMTP",
+    53: "DNS",
+    80: "HTTP",
+    110: "POP3",
+    139: "NetBIOS",
+    143: "IMAP",
+    443: "HTTPS",
+    445: "SMB",
+    3389: "RDP",
+}
 
 
 def password_strength_checker():
@@ -12,30 +29,19 @@ def password_strength_checker():
     score = 0
     feedback = []
 
-    if len(password) >= 12:
-        score += 1
-    else:
-        feedback.append("Use at least 12 characters.")
+    checks = [
+        (len(password) >= 12, "Use at least 12 characters."),
+        (re.search(r"[A-Z]", password), "Add at least one uppercase letter."),
+        (re.search(r"[a-z]", password), "Add at least one lowercase letter."),
+        (re.search(r"\d", password), "Add at least one number."),
+        (re.search(r'[!@#$%^&*(),.?":{}|<>]', password), "Add at least one special character."),
+    ]
 
-    if re.search(r"[A-Z]", password):
-        score += 1
-    else:
-        feedback.append("Add at least one uppercase letter.")
-
-    if re.search(r"[a-z]", password):
-        score += 1
-    else:
-        feedback.append("Add at least one lowercase letter.")
-
-    if re.search(r"\d", password):
-        score += 1
-    else:
-        feedback.append("Add at least one number.")
-
-    if re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
-        score += 1
-    else:
-        feedback.append("Add at least one special character.")
+    for passed, message in checks:
+        if passed:
+            score += 1
+        else:
+            feedback.append(message)
 
     if score == 5:
         strength = "Strong"
@@ -59,20 +65,20 @@ def hash_generator():
     print("--------------------------------")
 
     text = input("Enter text to hash: ").strip()
+    data = text.encode("utf-8")
 
     print("\nResults:")
-    print(f"MD5:    {hashlib.md5(text.encode()).hexdigest()}")
-    print(f"SHA1:   {hashlib.sha1(text.encode()).hexdigest()}")
-    print(f"SHA256: {hashlib.sha256(text.encode()).hexdigest()}")
+    print(f"MD5:    {hashlib.md5(data).hexdigest()}")
+    print(f"SHA1:   {hashlib.sha1(data).hexdigest()}")
+    print(f"SHA256: {hashlib.sha256(data).hexdigest()}")
 
 
 def scan_port(host, port):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.settimeout(1)
-            result = sock.connect_ex((host, port))
-            return result == 0
-    except Exception:
+            return sock.connect_ex((host, port)) == 0
+    except OSError:
         return False
 
 
@@ -83,25 +89,14 @@ def lab_port_scanner():
 
     host = input("Enter a host (example: 127.0.0.1): ").strip()
 
-    common_ports = {
-        21: "FTP",
-        22: "SSH",
-        23: "Telnet",
-        25: "SMTP",
-        53: "DNS",
-        80: "HTTP",
-        110: "POP3",
-        139: "NetBIOS",
-        143: "IMAP",
-        443: "HTTPS",
-        445: "SMB",
-        3389: "RDP"
-    }
+    if not host:
+        print("No host entered.")
+        return
 
     print(f"\nScanning common ports on {host}...\n")
     open_ports = []
 
-    for port, service in common_ports.items():
+    for port, service in COMMON_PORTS.items():
         if scan_port(host, port):
             open_ports.append((port, service))
             print(f"[OPEN]   Port {port} ({service})")
@@ -134,39 +129,47 @@ def subnet_helper():
         print("Invalid CIDR format.")
 
 
+def sha256_file(file_path):
+    hasher = hashlib.sha256()
+    with open(file_path, "rb") as file:
+        for chunk in iter(lambda: file.read(8192), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
 def file_integrity_checker():
     print("\n📁 File Integrity Checker")
     print("--------------------------------")
 
     file_path = input("Enter the full path to a file: ").strip()
 
+    if not os.path.isfile(file_path):
+        print("File not found.")
+        return
+
     try:
-        with open(file_path, "rb") as file:
-            data = file.read()
-
-        sha256_hash = hashlib.sha256(data).hexdigest()
-
+        sha256_hash = sha256_file(file_path)
         print("\nFile SHA256:")
         print(sha256_hash)
         print("\nSave this hash and compare it later to check if the file changes.")
+    except OSError as error:
+        print(f"Error: {error}")
 
-    except FileNotFoundError:
-        print("File not found.")
-    except Exception as e:
-        print(f"Error: {e}")
+
+def show_menu():
+    print("\n🧰 Mythos Lab Cybersecurity Toolbox")
+    print("====================================")
+    print("1. Password Strength Checker")
+    print("2. Hash Generator")
+    print("3. Lab Port Scanner")
+    print("4. Subnet Helper")
+    print("5. File Integrity Checker")
+    print("6. Exit")
 
 
 def main():
     while True:
-        print("\n🧰 Mythos Lab Cybersecurity Toolbox")
-        print("====================================")
-        print("1. Password Strength Checker")
-        print("2. Hash Generator")
-        print("3. Lab Port Scanner")
-        print("4. Subnet Helper")
-        print("5. File Integrity Checker")
-        print("6. Exit")
-
+        show_menu()
         choice = input("\nChoose an option (1-6): ").strip()
 
         if choice == "1":
