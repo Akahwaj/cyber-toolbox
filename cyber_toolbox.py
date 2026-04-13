@@ -1,5 +1,15 @@
+import argparse
+import sys
+
 from modules.password import run as password_tool
 from modules.hashing import run as hash_tool
+from modules.ai_agent import (
+    teach_tool,
+    answer_question,
+    run_walkthrough,
+    contextual_explain,
+    run_agent_menu,
+)
 
 
 MENU_ACTIONS = {
@@ -14,10 +24,8 @@ def pause():
 
 def run_teach_mode():
     print("\n🎓 Teach Mode")
-    print("Type what you want to do:")
-    print("- password")
-    print("- hash")
-    print("- wireless")
+    print("Type the name of a tool or topic you want to learn about.")
+    print("Examples: password, hash, nmap, aircrack-ng, metasploit, wireshark")
 
     task = input("\nTeach Mode task: ").strip().lower()
 
@@ -37,16 +45,12 @@ def run_teach_mode():
         except Exception as e:
             print(f"\nAn error occurred while running the hash tool: {e}")
 
-    elif "wireless" in task or "wifi" in task:
-        print("\n[Teach Mode]")
-        print("Wireless Toolkit will be connected here as part of the group.")
-        print("Module not connected yet.")
-
-    elif not task:
-        print("\nNo task entered.")
+    elif task:
+        # Delegate to the AI agent for any other tool name
+        teach_tool(task)
 
     else:
-        print("\nNo matching teach-mode tool found.")
+        print("\nNo task entered.")
 
 
 def run_expert_mode():
@@ -54,7 +58,7 @@ def run_expert_mode():
     print("Type the exact tool you want:")
     print("- password")
     print("- hash")
-    print("- wireless")
+    print("- wireless (aircrack-ng suite)")
 
     task = input("\nExpert task: ").strip().lower()
 
@@ -70,14 +74,15 @@ def run_expert_mode():
         except Exception as e:
             print(f"\nAn error occurred while running the hash tool: {e}")
 
-    elif task == "wireless":
-        print("\nWireless expert module not connected yet.")
+    elif task in ("wireless", "wifi", "aircrack-ng", "aircrack"):
+        teach_tool("aircrack-ng")
 
     elif not task:
         print("\nNo task entered.")
 
     else:
-        print("\nUnknown expert tool.")
+        print(f"\nNo direct module found for '{task}'. Checking AI knowledge base…")
+        teach_tool(task)
 
 
 def show_menu():
@@ -87,13 +92,81 @@ def show_menu():
         print(f"{key}. {description}")
     print("3. Teach Mode")
     print("4. Expert Tools")
-    print("5. Exit")
+    print("5. AI Security Agent")
+    print("6. Exit")
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Mythos Lab Cybersecurity Toolbox with AI Agent",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python cyber_toolbox.py --teach-tool nmap
+  python cyber_toolbox.py --teach-tool aircrack-ng
+  python cyber_toolbox.py --qa "How do I crack WPA passwords?"
+  python cyber_toolbox.py --qa "What does a CVSS score of 7.5 mean?"
+  python cyber_toolbox.py --walkthrough "linux privilege escalation"
+  python cyber_toolbox.py --walkthrough "web application owasp top 10"
+  python cyber_toolbox.py --contextual-explain --input logs/access.log
+        """,
+    )
+
+    parser.add_argument(
+        "--teach-tool",
+        metavar="TOOL",
+        help="Teach about a specific security tool (e.g. nmap, aircrack-ng, metasploit)",
+    )
+    parser.add_argument(
+        "--qa",
+        metavar="QUESTION",
+        help="Ask the AI agent a security question",
+    )
+    parser.add_argument(
+        "--walkthrough",
+        metavar="SCENARIO",
+        help="Run an interactive walkthrough for a pentesting scenario",
+    )
+    parser.add_argument(
+        "--contextual-explain",
+        action="store_true",
+        help="Analyse a log or tool output file for suspicious patterns",
+    )
+    parser.add_argument(
+        "--input",
+        metavar="FILE",
+        help="Path to the file to analyse (used with --contextual-explain)",
+    )
+
+    # If no arguments were given, fall through to the interactive menu
+    if len(sys.argv) == 1:
+        _run_interactive()
+        return
+
+    args = parser.parse_args()
+
+    if args.teach_tool:
+        teach_tool(args.teach_tool)
+
+    elif args.qa:
+        answer_question(args.qa)
+
+    elif args.walkthrough:
+        run_walkthrough(args.walkthrough)
+
+    elif args.contextual_explain:
+        if not args.input:
+            parser.error("--contextual-explain requires --input <FILE>")
+        contextual_explain(args.input)
+
+    else:
+        parser.print_help()
+
+
+def _run_interactive():
     while True:
         show_menu()
-        choice = input("\nChoose an option (1-5): ").strip()
+        choice = input("\nChoose an option (1-6): ").strip()
 
         if choice in MENU_ACTIONS:
             try:
@@ -111,6 +184,9 @@ def main():
             pause()
 
         elif choice == "5":
+            run_agent_menu()
+
+        elif choice == "6":
             while True:
                 confirm = input("\nAre you sure you want to exit? (yes/no): ").strip().lower()
 
@@ -124,11 +200,11 @@ def main():
             pause()
 
         elif not choice:
-            print("\nNo option selected. Please choose a number between 1 and 5.")
+            print("\nNo option selected. Please choose a number between 1 and 6.")
             pause()
 
         else:
-            print("\nInvalid choice. Please enter a number between 1 and 5.")
+            print("\nInvalid choice. Please enter a number between 1 and 6.")
             pause()
 
 
