@@ -177,7 +177,7 @@ def quick_start():
     print("\nStep 2: Checking optional AI dependencies...")
     try:
         import anthropic
-        print(f"  ✓ anthropic (Claude / Mythos) installed  [version {anthropic.__version__}]")
+        print(f"  ✓ anthropic (Claude / Mythos) installed [version {anthropic.__version__}]")
     except ImportError:
         print("  ✗ anthropic not installed (pip install anthropic>=0.40.0)")
 

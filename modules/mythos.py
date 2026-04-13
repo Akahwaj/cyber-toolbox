@@ -20,6 +20,7 @@ API keys are read from the ANTHROPIC_API_KEY environment variable.
 
 import os
 import json
+from typing import Optional
 
 try:
     import anthropic
@@ -76,7 +77,7 @@ _SCAN_TOOLS = [
                 "next_steps": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Prioritised list of recommended next steps.",
+                    "description": "Prioritized list of recommended next steps.",
                 },
             },
             "required": ["severity", "summary", "findings", "next_steps"],
@@ -105,10 +106,10 @@ class MythosClient:
         client.multi_turn_chat()
     """
 
-    def __init__(self, api_key: str | None = None, model: str = MYTHOS_MODEL):
+    def __init__(self, api_key: Optional[str] = None, model: str = MYTHOS_MODEL):
         self.model = model
         api_key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")
-        self._client: "anthropic.Anthropic | None" = None
+        self._client: Optional["anthropic.Anthropic"] = None
         if ANTHROPIC_AVAILABLE and api_key:
             self._client = anthropic.Anthropic(api_key=api_key)
 
@@ -140,7 +141,7 @@ class MythosClient:
     # Core API wrappers
     # ------------------------------------------------------------------
 
-    def stream_query(self, prompt: str, system: str | None = None) -> str:
+    def stream_query(self, prompt: str, system: Optional[str] = None) -> str:
         """
         Send *prompt* to Claude and stream the response to stdout in real time.
 
@@ -190,7 +191,7 @@ class MythosClient:
                 max_tokens=2048,
                 system=SYSTEM_PROMPT,
                 tools=_SCAN_TOOLS,
-                tool_choice={"type": "any"},
+                tool_choice={"type": "required"},
                 messages=[{"role": "user", "content": prompt}],
             )
         except anthropic.APIError as exc:
@@ -290,7 +291,7 @@ def run() -> None:
             print("No target provided.")
             return
 
-        print("\n⏳ Analysing with Claude…")
+        print("\n⏳ Analyzing with Claude…")
         result = client.tool_assisted_scan(target)
 
         if result is None:
