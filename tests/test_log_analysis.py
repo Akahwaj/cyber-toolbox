@@ -222,9 +222,10 @@ class TestAnalyzeFile:
 
     def test_file_with_encoding_errors(self, capsys):
         # Write binary content that would cause encoding errors
-        path = tempfile.mktemp(suffix='.log')
-        with open(path, 'wb') as f:
-            f.write(b"normal line\nfailed password\n\xff\xfe invalid bytes\n")
+        f = tempfile.NamedTemporaryFile(suffix='.log', delete=False)
+        f.write(b"normal line\nfailed password\n\xff\xfe invalid bytes\n")
+        f.close()
+        path = f.name
         try:
             result = analyze_file(path)
             assert "brute_force" in result
