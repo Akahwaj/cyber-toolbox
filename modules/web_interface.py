@@ -41,9 +41,10 @@ def run():
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-         background: #0d1117; color: #c9d1d9; min-height: 100vh; }
+         background: #0d1117; color: #c9d1d9; min-height: 100vh;
+         -webkit-tap-highlight-color: transparent; }
   header { background: #161b22; border-bottom: 1px solid #30363d;
-           padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+           padding: 16px 24px; display: flex; align-items: center; }
   header h1 { font-size: 1.3rem; color: #58a6ff; }
   .container { max-width: 900px; margin: 0 auto; padding: 20px; }
   .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px;
@@ -51,15 +52,19 @@ def run():
   .card h2 { color: #58a6ff; margin-bottom: 12px; font-size: 1.1rem; }
   input, textarea, select { width: 100%; padding: 10px; margin: 6px 0 12px;
     background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
-    color: #c9d1d9; font-size: 0.95rem; }
+    color: #c9d1d9; font-size: 0.95rem;
+    -webkit-appearance: none; appearance: none;
+    -webkit-text-fill-color: #c9d1d9; }
   button { background: #238636; color: white; border: none; padding: 10px 20px;
-           border-radius: 6px; cursor: pointer; font-size: 0.95rem; width: 100%; }
+           border-radius: 6px; cursor: pointer; font-size: 0.95rem; width: 100%;
+           -webkit-appearance: none; appearance: none; }
   button:hover { background: #2ea043; }
   .result { background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
             padding: 12px; margin-top: 12px; white-space: pre-wrap; font-size: 0.9rem; display: none; }
-  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .tabs { display: flex; flex-wrap: wrap; margin-bottom: 12px; }
   .tab { padding: 8px 16px; background: #21262d; border: 1px solid #30363d;
-         border-radius: 6px; cursor: pointer; font-size: 0.9rem; color: #8b949e; }
+         border-radius: 6px; cursor: pointer; font-size: 0.9rem; color: #8b949e;
+         margin: 0 8px 8px 0; }
   .tab.active { background: #1f6feb; border-color: #1f6feb; color: white; }
   .panel { display: none; } .panel.active { display: block; }
   .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; }
@@ -70,7 +75,7 @@ def run():
 </head>
 <body>
 <header>
-  <span style="font-size:1.5rem">🧰</span>
+  <span style="font-size:1.5rem;margin-right:12px">🧰</span>
   <h1>Mythos Lab Cyber Toolbox</h1>
   <span style="margin-left:auto;font-size:0.8rem;color:#8b949e">Mobile Interface</span>
 </header>
@@ -106,9 +111,9 @@ def run():
   <div id="ai" class="panel">
     <div class="card">
       <h2>🤖 AI Cybersecurity Assistant</h2>
-      <div id="chat-history" style="min-height:150px;max-height:350px;overflow-y:auto;
-           background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;
-           margin-bottom:12px;font-size:0.9rem;"></div>
+      <div id="chat-history" style="min-height:150px; max-height:350px; overflow-y:auto;
+           -webkit-overflow-scrolling:touch; background:#0d1117; border:1px solid #30363d;
+           border-radius:6px; padding:12px; margin-bottom:12px; font-size:0.9rem;"></div>
       <textarea id="chat-input" rows="2" placeholder="Ask anything about cybersecurity..."></textarea>
       <button onclick="sendChat()">Send</button>
     </div>
@@ -130,8 +135,9 @@ def run():
 </div>
 <script>
 function showTab(name, event) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+// Use Array.from() for Safari < 12 compatibility (NodeList.forEach was added in Safari 12)
+  Array.from(document.querySelectorAll('.tab')).forEach(function(t) { t.classList.remove('active'); });
+  Array.from(document.querySelectorAll('.panel')).forEach(function(p) { p.classList.remove('active'); });
   document.getElementById(name).classList.add('active');
   if (event && event.target) event.target.classList.add('active');
 }
