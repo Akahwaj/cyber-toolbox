@@ -165,11 +165,21 @@ async function sendChat() {
   if (!msg) return;
   input.value = '';
   const hist = document.getElementById('chat-history');
-  hist.innerHTML += `<div style="color:#79c0ff;margin-bottom:8px"><strong>You:</strong> ${msg}</div>`;
+  const youDiv = document.createElement('div');
+  youDiv.style.cssText = 'color:#79c0ff;margin-bottom:8px';
+  youDiv.innerHTML = '<strong>You:</strong> ';
+  youDiv.appendChild(document.createTextNode(msg));
+  hist.appendChild(youDiv);
   chatHist.push({role:'user', content:msg});
   const res = await post('/api/chat', {message: msg, history: chatHist});
   chatHist.push({role:'assistant', content:res.response});
-  hist.innerHTML += `<div style="color:#aff5b4;margin-bottom:12px"><strong>AI:</strong> ${res.response.replace(/\\n/g,'<br>')}</div>`;
+  const aiDiv = document.createElement('div');
+  aiDiv.style.cssText = 'color:#aff5b4;margin-bottom:12px';
+  aiDiv.innerHTML = '<strong>AI:</strong> ';
+  const aiText = document.createElement('span');
+  aiText.textContent = res.response;
+  aiDiv.appendChild(aiText);
+  hist.appendChild(aiDiv);
   hist.scrollTop = hist.scrollHeight;
 }
 async function learnTool() {
@@ -218,21 +228,30 @@ document.getElementById('chat-input').addEventListener('keydown', e => {
     def api_chat():
         data = request.get_json()
         message = data.get('message', '')
-        response = agent.query(message)
+        try:
+            response = agent.query(message)
+        except Exception:
+            response = "An error occurred while processing your request."
         return jsonify({'response': response})
 
     @app.route('/api/learn', methods=['POST'])
     def api_learn():
         data = request.get_json()
         tool = data.get('tool', '')
-        content = agent.teach_tool(tool)
+        try:
+            content = agent.teach_tool(tool)
+        except Exception:
+            content = "An error occurred while processing your request."
         return jsonify({'content': content})
 
     @app.route('/api/explain', methods=['POST'])
     def api_explain():
         data = request.get_json()
         topic = data.get('topic', '')
-        content = agent.explain_topic(topic)
+        try:
+            content = agent.explain_topic(topic)
+        except Exception:
+            content = "An error occurred while processing your request."
         return jsonify({'content': content})
 
     local_ip = get_local_ip()

@@ -18,7 +18,9 @@ API Keys (optional, for AI features):
 """
 
 import sys
+import os
 import argparse
+import subprocess
 
 from modules.password import run as password_tool
 from modules.hashing import run as hash_tool
@@ -168,7 +170,6 @@ def quick_start():
     print("\n🚀 Quick Start - Mythos Lab Cyber Toolbox")
     print("==========================================")
     print("\nStep 1: Checking Python environment...")
-    import sys
     print(f"  Python {sys.version}")
 
     print("\nStep 2: Checking optional AI dependencies...")
@@ -191,7 +192,6 @@ def quick_start():
         print("  ✗ flask not installed (pip install flask)")
 
     print("\nStep 3: Checking API keys...")
-    import os
     if os.environ.get("ANTHROPIC_API_KEY"):
         print("  ✓ ANTHROPIC_API_KEY is set")
     else:
@@ -205,7 +205,6 @@ def quick_start():
         print("    Set with: export OPENAI_API_KEY=your-key")
 
     print("\nStep 4: Checking security tools...")
-    import subprocess
     tools = ["nmap", "aircrack-ng", "adb", "frida", "apktool", "wireshark"]
     for tool in tools:
         try:

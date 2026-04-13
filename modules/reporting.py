@@ -5,8 +5,9 @@ import json
 
 def generate_report(title, findings, ai_insights=None, output_format="markdown"):
     """Generate a security report in the specified format."""
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    report_name = f"report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    now = datetime.datetime.now()
+    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+    report_name = f"report_{now.strftime('%Y%m%d_%H%M%S')}"
 
     if output_format == "markdown":
         return _generate_markdown(title, findings, ai_insights, timestamp, report_name)

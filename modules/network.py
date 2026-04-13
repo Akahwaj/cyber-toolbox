@@ -1,9 +1,12 @@
 """Network security tools module."""
+import re
 import subprocess
 import socket
 import ipaddress
 
 COMMON_PORTS = [21, 22, 23, 25, 53, 80, 110, 143, 443, 445, 3306, 3389, 5432, 8080, 8443]
+
+_ALLOWED_NMAP_FLAGS = re.compile(r'^[-\w\s./,]+$')
 
 def check_tool(tool):
     try:
@@ -30,6 +33,9 @@ def run_nmap(target, flags="-sV"):
     """Run nmap if available."""
     if not check_tool("nmap"):
         print("\nNmap not installed. Install with: sudo apt install nmap")
+        return
+    if not _ALLOWED_NMAP_FLAGS.match(flags):
+        print("Invalid nmap flags. Only alphanumeric characters, hyphens, and dots are allowed.")
         return
     print(f"\nRunning: nmap {flags} {target}")
     try:

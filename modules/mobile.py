@@ -1,6 +1,7 @@
 """Mobile security tools module (Android and iOS)."""
 import subprocess
 import os
+import re
 import zipfile
 import json
 
@@ -17,6 +18,8 @@ IOS_TOOLS = {
     "objection": "Runtime mobile exploration powered by Frida.",
     "ideviceinfo": "Query information from connected iOS devices.",
 }
+
+_PKG_RE = re.compile(r'^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+$')
 
 def check_tool(tool):
     try:
@@ -59,7 +62,9 @@ def analyze_apk_static(apk_path):
     # Run apktool if available
     if check_tool("apktool"):
         print("\nRunning apktool decode...")
-        out_dir = apk_path.replace(".apk", "_decoded")
+        base = os.path.basename(apk_path)
+        out_dir = os.path.join(os.path.dirname(os.path.abspath(apk_path)),
+                               base.replace(".apk", "_decoded"))
         result = subprocess.run(["apktool", "d", apk_path, "-o", out_dir, "-f"],
                                 capture_output=True, text=True, timeout=120)
         if result.returncode == 0:
@@ -119,6 +124,9 @@ def run():
             return
         pkg = input("Package name (e.g., com.example.app): ").strip()
         if pkg:
+            if not _PKG_RE.match(pkg):
+                print("Invalid package name format.")
+                return
             print(f"Finding APK path for {pkg}...")
             result = subprocess.run(["adb", "shell", "pm", "path", pkg],
                                     capture_output=True, text=True, timeout=10)

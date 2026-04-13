@@ -1,5 +1,7 @@
 """Wireless security tools module."""
+import os
 import subprocess
+import re
 
 TOOLS = {
     "airmon-ng": "Enable/disable monitor mode on wireless interfaces.",
@@ -9,6 +11,15 @@ TOOLS = {
     "iwconfig": "Configure wireless network interface parameters.",
     "iwlist": "Scan and list available wireless networks.",
 }
+
+_IFACE_RE = re.compile(r'^[a-zA-Z0-9_-]{1,32}$')
+_MAC_RE = re.compile(r'^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$')
+
+def _validate_interface(iface):
+    return bool(_IFACE_RE.match(iface))
+
+def _validate_mac(mac):
+    return bool(_MAC_RE.match(mac))
 
 def check_tool(tool):
     try:
@@ -29,6 +40,9 @@ def list_interfaces():
 
 def enable_monitor_mode(interface):
     """Enable monitor mode on an interface."""
+    if not _validate_interface(interface):
+        print("Invalid interface name.")
+        return
     if not check_tool("airmon-ng"):
         print("airmon-ng not found. Install: sudo apt install aircrack-ng")
         return
@@ -41,6 +55,9 @@ def enable_monitor_mode(interface):
 
 def capture_packets(interface, output_file="capture"):
     """Start packet capture with airodump-ng."""
+    if not _validate_interface(interface):
+        print("Invalid interface name.")
+        return
     if not check_tool("airodump-ng"):
         print("airodump-ng not found. Install: sudo apt install aircrack-ng")
         return
@@ -83,6 +100,15 @@ def run():
         wordlist = input("Wordlist path: ").strip()
         bssid = input("BSSID (target AP MAC): ").strip()
         if cap and wordlist and bssid:
+            if not _validate_mac(bssid):
+                print("Invalid BSSID format. Expected MAC address (e.g., AA:BB:CC:DD:EE:FF).")
+                return
+            if not os.path.isfile(cap):
+                print(f"Capture file not found: {cap}")
+                return
+            if not os.path.isfile(wordlist):
+                print(f"Wordlist file not found: {wordlist}")
+                return
             if not check_tool("aircrack-ng"):
                 print("aircrack-ng not found.")
                 return
