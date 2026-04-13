@@ -743,7 +743,7 @@ LOG_PATTERNS = [
         "Review the associated request and ensure all queries use parameterised statements.",
     ),
     (
-        re.compile(r"<script.*?>|onerror\s*=|javascript:", re.IGNORECASE),
+        re.compile(r"<script[\s>]|<script$|onerror\s*=|javascript:", re.IGNORECASE),
         "🚨 POSSIBLE XSS ATTEMPT",
         "Script tags or event handlers in request logs indicate attempted Cross-Site Scripting. "
         "Ensure output encoding and a Content Security Policy are in place.",
@@ -773,7 +773,7 @@ LOG_PATTERNS = [
         "Ensure error handling hides implementation details in production.",
     ),
     (
-        re.compile(r"(\b(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b.*\b(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b", re.IGNORECASE),
+        re.compile(r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b.*\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"),
         "ℹ️  MULTIPLE IP ADDRESSES",
         "Multiple distinct IP addresses in a log line may indicate proxy chains, "
         "load balancer headers, or X-Forwarded-For spoofing.",
@@ -793,7 +793,6 @@ def teach_tool(tool_name: str) -> None:
     aliases = {
         "john the ripper": "john",
         "jtr": "john",
-        "map": "nmap",
         "aircrack": "aircrack-ng",
         "msf": "metasploit",
         "msfconsole": "metasploit",

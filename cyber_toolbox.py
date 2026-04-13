@@ -1,5 +1,4 @@
 import argparse
-import sys
 
 from modules.password import run as password_tool
 from modules.hashing import run as hash_tool
@@ -138,12 +137,12 @@ Examples:
         help="Path to the file to analyse (used with --contextual-explain)",
     )
 
+    args = parser.parse_args()
+
     # If no arguments were given, fall through to the interactive menu
-    if len(sys.argv) == 1:
+    if not any([args.teach_tool, args.qa, args.walkthrough, args.contextual_explain]):
         _run_interactive()
         return
-
-    args = parser.parse_args()
 
     if args.teach_tool:
         teach_tool(args.teach_tool)
