@@ -167,7 +167,9 @@ async function sendChat() {
   const hist = document.getElementById('chat-history');
   const youDiv = document.createElement('div');
   youDiv.style.cssText = 'color:#79c0ff;margin-bottom:8px';
-  youDiv.innerHTML = '<strong>You:</strong> ';
+  const youLabel = document.createElement('strong');
+  youLabel.textContent = 'You: ';
+  youDiv.appendChild(youLabel);
   youDiv.appendChild(document.createTextNode(msg));
   hist.appendChild(youDiv);
   chatHist.push({role:'user', content:msg});
@@ -175,7 +177,9 @@ async function sendChat() {
   chatHist.push({role:'assistant', content:res.response});
   const aiDiv = document.createElement('div');
   aiDiv.style.cssText = 'color:#aff5b4;margin-bottom:12px';
-  aiDiv.innerHTML = '<strong>AI:</strong> ';
+  const aiLabel = document.createElement('strong');
+  aiLabel.textContent = 'AI: ';
+  aiDiv.appendChild(aiLabel);
   const aiText = document.createElement('span');
   aiText.textContent = res.response;
   aiDiv.appendChild(aiText);

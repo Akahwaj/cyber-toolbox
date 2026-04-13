@@ -334,9 +334,11 @@ Examples:
 
         elif not choice:
             print("\nNo option selected.")
+            pause()
 
         else:
             print(f"\nInvalid choice '{choice}'. Please select from the menu.")
+            pause()
 
 
 if __name__ == "__main__":

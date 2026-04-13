@@ -64,8 +64,8 @@ class AIAgent:
                 messages=[{"role": "user", "content": prompt}]
             )
             return message.content[0].text
-        except Exception as e:
-            return f"[Claude error: {e}]"
+        except Exception:
+            return "[Claude API request failed. Please try again.]"
 
     def _query_openai(self, prompt, system=None):
         if not self._openai_client:
@@ -81,8 +81,8 @@ class AIAgent:
                 max_tokens=2048,
             )
             return response.choices[0].message.content
-        except Exception as e:
-            return f"[OpenAI error: {e}]"
+        except Exception:
+            return "[OpenAI API request failed. Please try again.]"
 
     def query(self, prompt, system=None, use_both=False):
         """Query AI. Uses preferred provider, falls back to other if needed."""
@@ -160,8 +160,8 @@ class AIAgent:
                         messages=history,
                     )
                     response = msg.content[0].text
-                except Exception as e:
-                    response = self._query_openai(user_input) or f"Error: {e}"
+                except Exception:
+                    response = self._query_openai(user_input) or "[Request failed. Please try again.]"
             elif self._openai_client:
                 msgs = [{"role": "system", "content": CYBERSECURITY_SYSTEM_PROMPT}] + history
                 try:
@@ -169,8 +169,8 @@ class AIAgent:
                         model=OPENAI_MODEL, messages=msgs, max_tokens=2048
                     )
                     response = resp.choices[0].message.content
-                except Exception as e:
-                    response = f"Error: {e}"
+                except Exception:
+                    response = "[Request failed. Please try again.]"
             else:
                 response = self._offline_response(user_input)
             history.append({"role": "assistant", "content": response})
