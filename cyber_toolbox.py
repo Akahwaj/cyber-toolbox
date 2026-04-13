@@ -31,6 +31,7 @@ from modules.mobile import run as mobile_tool
 from modules.log_analysis import run as log_tool, analyze_file
 from modules.reporting import run as report_tool
 from modules.web_interface import run as web_tool
+from modules.mythos import run as mythos_tool
 
 
 AI_AGENT = None
@@ -53,6 +54,7 @@ MENU_ACTIONS = {
     "7": (report_tool, "Report Generator"),
     "8": (ai_tool, "AI Cybersecurity Assistant"),
     "9": (web_tool, "Web Interface (Mobile Access)"),
+    "10": (mythos_tool, "Mythos Integration (Anthropic Claude SDK)"),
 }
 
 
@@ -160,9 +162,9 @@ def show_menu():
     print("====================================")
     for key, (_, description) in MENU_ACTIONS.items():
         print(f"{key}. {description}")
-    print("10. Teach Mode (AI-guided)")
-    print("11. Expert Tools")
-    print("12. Scenario-Based Learning")
+    print("11. Teach Mode (AI-guided)")
+    print("12. Expert Tools")
+    print("13. Scenario-Based Learning")
     print("0.  Exit")
 
 
@@ -175,9 +177,9 @@ def quick_start():
     print("\nStep 2: Checking optional AI dependencies...")
     try:
         import anthropic
-        print("  ✓ anthropic (Claude) installed")
+        print(f"  ✓ anthropic (Claude / Mythos) installed [version {anthropic.__version__}]")
     except ImportError:
-        print("  ✗ anthropic not installed (pip install anthropic)")
+        print("  ✗ anthropic not installed (pip install anthropic>=0.40.0)")
 
     try:
         import openai
@@ -215,10 +217,11 @@ def quick_start():
 
     print("\n✅ Quick Start Complete!")
     print("\nRecommended next steps:")
-    print("  1. Install missing AI packages: pip install anthropic openai flask")
+    print("  1. Install Mythos/AI packages: pip install anthropic>=0.40.0 openai flask")
     print("  2. Set API keys in your environment")
-    print("  3. Try the AI Chat: python cyber_toolbox.py --chat")
-    print("  4. Read USAGE_GUIDE.txt for full documentation")
+    print("  3. Try the Mythos integration: python cyber_toolbox.py  → option 10")
+    print("  4. Try the AI Chat: python cyber_toolbox.py --chat")
+    print("  5. Read USAGE_GUIDE.txt for full documentation")
 
 
 def main():
@@ -309,15 +312,15 @@ Examples:
                 print(f"\nAn error occurred: {e}")
             pause()
 
-        elif choice == "10":
+        elif choice == "11":
             run_teach_mode()
             pause()
 
-        elif choice == "11":
+        elif choice == "12":
             run_expert_mode()
             pause()
 
-        elif choice == "12":
+        elif choice == "13":
             run_scenario_mode()
             pause()
 

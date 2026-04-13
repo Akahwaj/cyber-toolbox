@@ -15,7 +15,7 @@ INSTALLATION
    cd cyber-toolbox
 
 2. Install optional dependencies:
-   pip install anthropic openai flask
+   pip install anthropic>=0.40.0 openai flask
 
 3. Set API keys (optional, for AI features):
    export ANTHROPIC_API_KEY=your-claude-api-key
@@ -70,9 +70,10 @@ INTERACTIVE MENU OPTIONS
 7.  Report Generator           - Generate PDF/HTML/Markdown security reports
 8.  AI Cybersecurity Assistant - Interactive AI chat and teaching
 9.  Web Interface              - Browser-based UI accessible from mobile devices
-10. Teach Mode                 - AI-guided tutorials on any security topic
-11. Expert Tools               - Quick access to any tool by name
-12. Scenario-Based Learning    - Step-by-step guided security scenarios
+10. Mythos Integration         - Anthropic Claude SDK: streaming, tool-use, multi-turn chat
+11. Teach Mode                 - AI-guided tutorials on any security topic
+12. Expert Tools               - Quick access to any tool by name
+13. Scenario-Based Learning    - Step-by-step guided security scenarios
 0.  Exit
 
 MODULES OVERVIEW
@@ -85,6 +86,12 @@ modules/password.py
 modules/hashing.py
   - hash_text(text, algorithm) -> hex_digest
   - Supports: md5, sha1, sha256, sha512
+
+modules/mythos.py
+  - MythosClient class wrapping the Anthropic Python SDK (anthropic>=0.40.0)
+  - Methods: stream_query(), tool_assisted_scan(), multi_turn_chat()
+  - Gracefully degrades when ANTHROPIC_API_KEY is not set
+  - Install: pip install anthropic>=0.40.0
 
 modules/ai_agent.py
   - AIAgent class with Claude and OpenAI support
@@ -126,10 +133,11 @@ AI FEATURES
 -----------
 The AI agent works in three modes:
 
-1. Online with Claude (Anthropic):
+1. Online with Claude / Mythos Integration (Anthropic):
    - Set ANTHROPIC_API_KEY environment variable
-   - pip install anthropic
+   - pip install anthropic>=0.40.0
    - Uses claude-opus-4-5 model
+   - Full SDK features: streaming, tool-use, multi-turn chat (menu option 10)
 
 2. Online with OpenAI GPT:
    - Set OPENAI_API_KEY environment variable
@@ -143,6 +151,40 @@ The AI agent works in three modes:
 SECURITY TOOLS INTEGRATION
 ---------------------------
 The toolbox integrates with these external tools (must be installed separately):
+
+MYTHOS INTEGRATION (ANTHROPIC CLAUDE SDK)
+-----------------------------------------
+The Mythos module provides first-class access to Anthropic's Python SDK.
+
+Installation:
+  pip install anthropic>=0.40.0
+  export ANTHROPIC_API_KEY=your-api-key
+
+Usage via menu:
+  python cyber_toolbox.py   # Select option 10: Mythos Integration
+
+  Options:
+    1. Ask a question           — streaming response printed in real time
+    2. Security scan            — structured JSON findings via tool-use API
+    3. Chat session             — multi-turn conversation with history
+
+Usage as a library (modules/mythos.py):
+
+  from modules.mythos import MythosClient
+
+  client = MythosClient()
+
+  # Streaming answer
+  client.stream_query("Explain CVE-2021-44228 (Log4Shell)")
+
+  # Structured scan (tool-use)
+  result = client.tool_assisted_scan(
+      "Apache 2.4.49 with directory listing on Ubuntu 20.04"
+  )
+  print(result["severity"], result["summary"])
+
+  # Multi-turn session
+  client.multi_turn_chat()
 
 Network:
   sudo apt install nmap
