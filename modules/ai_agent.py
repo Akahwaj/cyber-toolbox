@@ -64,8 +64,9 @@ class AIAgent:
                 messages=[{"role": "user", "content": prompt}]
             )
             return message.content[0].text
-        except Exception:
-            return "[Claude API request failed. Please try again.]"
+        except Exception as exc:
+            return (f"[Claude API request failed: {exc}. "
+                    "Possible causes: invalid API key, network issues, or quota exceeded.]")
 
     def _query_openai(self, prompt, system=None):
         if not self._openai_client:
@@ -81,8 +82,9 @@ class AIAgent:
                 max_tokens=2048,
             )
             return response.choices[0].message.content
-        except Exception:
-            return "[OpenAI API request failed. Please try again.]"
+        except Exception as exc:
+            return (f"[OpenAI API request failed: {exc}. "
+                    "Possible causes: invalid API key, network issues, or quota exceeded.]")
 
     def query(self, prompt, system=None, use_both=False):
         """Query AI. Uses preferred provider, falls back to other if needed."""
@@ -198,6 +200,10 @@ class AIAgent:
         prompt = (f"Analyze this log file for security issues:\n\n{log_content}\n\n"
                   f"Identify: suspicious patterns, attack indicators, anomalies, "
                   f"brute-force attempts, injection attempts, and recommended actions.")
+        if not self._is_available():
+            return ("Set ANTHROPIC_API_KEY or OPENAI_API_KEY for AI-powered log analysis.\n"
+                    "The built-in pattern scanner above already detected key threats.\n"
+                    "Install: pip install anthropic openai")
         return self.query(prompt)
 
     def analyze_apk_info(self, app_name, permissions=None):

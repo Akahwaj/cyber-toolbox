@@ -234,8 +234,10 @@ document.getElementById('chat-input').addEventListener('keydown', e => {
         message = data.get('message', '')
         try:
             response = agent.query(message)
-        except Exception:
-            response = "An error occurred while processing your request."
+        except Exception as exc:
+            response = (f"AI service unavailable: {exc}. "
+                        "Check your API keys (ANTHROPIC_API_KEY / OPENAI_API_KEY) "
+                        "and network connectivity.")
         return jsonify({'response': response})
 
     @app.route('/api/learn', methods=['POST'])
@@ -244,8 +246,9 @@ document.getElementById('chat-input').addEventListener('keydown', e => {
         tool = data.get('tool', '')
         try:
             content = agent.teach_tool(tool)
-        except Exception:
-            content = "An error occurred while processing your request."
+        except Exception as exc:
+            content = (f"AI service unavailable: {exc}. "
+                       "Check your API keys and network connectivity.")
         return jsonify({'content': content})
 
     @app.route('/api/explain', methods=['POST'])
@@ -254,8 +257,9 @@ document.getElementById('chat-input').addEventListener('keydown', e => {
         topic = data.get('topic', '')
         try:
             content = agent.explain_topic(topic)
-        except Exception:
-            content = "An error occurred while processing your request."
+        except Exception as exc:
+            content = (f"AI service unavailable: {exc}. "
+                       "Check your API keys and network connectivity.")
         return jsonify({'content': content})
 
     local_ip = get_local_ip()

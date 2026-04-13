@@ -103,6 +103,8 @@ def run():
             if not _validate_mac(bssid):
                 print("Invalid BSSID format. Expected MAC address (e.g., AA:BB:CC:DD:EE:FF).")
                 return
+            cap = os.path.realpath(cap)
+            wordlist = os.path.realpath(wordlist)
             if not os.path.isfile(cap):
                 print(f"Capture file not found: {cap}")
                 return
