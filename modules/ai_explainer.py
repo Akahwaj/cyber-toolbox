@@ -31,7 +31,7 @@ _VULNERABILITY_KB = {
         ),
         "impact": "Unauthorized data access, data modification, or full database compromise.",
         "fixes": [
-            "Use parameterised queries / prepared statements.",
+            "Use parameterized queries / prepared statements.",
             "Apply input validation and allowlisting.",
             "Use a Web Application Firewall (WAF).",
             "Follow the principle of least privilege for DB accounts.",
@@ -708,8 +708,8 @@ class AIExplainer:
                 max_tokens=1024,
             )
             return "\n" + response.choices[0].message.content.strip()
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             return (
-                f"\n⚠️  OpenAI request failed: {exc}\n"
+                f"\n⚠️  OpenAI request failed ({type(exc).__name__}: {exc})\n"
                 "Falling back to built-in knowledge base."
             )

@@ -1,6 +1,9 @@
 import hashlib
 
 
+# MD5 and SHA1 are cryptographically broken; they are included here for
+# legacy/learning purposes only.  Do NOT use them for password storage,
+# digital signatures, or any security-critical operation.
 ALGORITHMS = ["md5", "sha1", "sha256", "sha512"]
 
 

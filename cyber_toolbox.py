@@ -312,7 +312,7 @@ def main():
                 with open(args.input_file, encoding="utf-8", errors="replace") as fh:
                     log_data = fh.read()
             except OSError as exc:
-                print(f"Error reading file: {exc}")
+                print(f"Error reading file {args.input_file}: {exc}")
                 sys.exit(1)
         else:
             print("Paste log data (end with an empty line):")
