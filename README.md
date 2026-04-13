@@ -15,15 +15,16 @@ Integrates **Claude (Anthropic)** and **OpenAI GPT** with a comprehensive suite 
 | 📋 Log Analysis | Detect brute-force, SQLi, XSS, path traversal |
 | 📄 Report Generator | Markdown, HTML, JSON security reports |
 | 🤖 AI Assistant | Claude + OpenAI chat, teach mode, topic explainer |
+| 🔮 Mythos Integration | Anthropic Claude SDK — streaming, tool-use, multi-turn chat |
 | 🌐 Web Interface | Mobile-accessible browser UI (Flask) |
 
 ## Quick Start
 
 ```bash
-# Clone and install optional dependencies
-pip install anthropic openai flask
+# Clone and install dependencies
+pip install anthropic>=0.40.0 openai flask
 
-# Set AI API keys (optional)
+# Set AI API keys (optional but recommended for Mythos and AI features)
 export ANTHROPIC_API_KEY=your-claude-key
 export OPENAI_API_KEY=your-openai-key
 
@@ -47,11 +48,60 @@ python cyber_toolbox.py --report                 # Generate report
 python cyber_toolbox.py --scenario               # Guided scenarios
 ```
 
+## Mythos Integration (Anthropic Claude SDK)
+
+The **Mythos Integration** module (`modules/mythos.py`) provides a dedicated interface to
+Anthropic's Python SDK with cybersecurity-focused helpers:
+
+### Installation
+
+```bash
+pip install anthropic>=0.40.0
+export ANTHROPIC_API_KEY=your-api-key
+```
+
+### Features
+
+| Feature | Description |
+|---|---|
+| **Streaming responses** | Live token-by-token output via `stream_query()` |
+| **Tool-use / structured output** | Structured JSON findings via `tool_assisted_scan()` |
+| **Multi-turn chat** | Persistent conversation history via `multi_turn_chat()` |
+
+### Quick Example
+
+```python
+from modules.mythos import MythosClient
+
+client = MythosClient()
+
+# Streaming question
+client.stream_query("What is a SYN flood attack and how do I defend against it?")
+
+# Structured security scan with tool-use
+result = client.tool_assisted_scan(
+    "Apache 2.4.49 web server with directory listing enabled on Ubuntu 20.04"
+)
+if result:
+    print(result["severity"], result["summary"])
+    for finding in result["findings"]:
+        print(f"  [{finding['title']}] {finding['recommendation']}")
+
+# Interactive multi-turn session
+client.multi_turn_chat()
+```
+
+### Via the Interactive Menu
+
+```bash
+python cyber_toolbox.py     # Choose option 10 → Mythos Integration
+```
+
 ## AI Integration
 
 The AI agent works with or without API keys:
 
-- **With Claude**: Set `ANTHROPIC_API_KEY` + `pip install anthropic`
+- **With Claude / Mythos**: Set `ANTHROPIC_API_KEY` + `pip install anthropic>=0.40.0`
 - **With OpenAI**: Set `OPENAI_API_KEY` + `pip install openai`
 - **Offline**: Built-in responses for common security topics
 
