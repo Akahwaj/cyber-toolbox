@@ -1,0 +1,188 @@
+================================================================================
+MYTHOS LAB CYBER TOOLBOX - USAGE GUIDE
+================================================================================
+
+OVERVIEW
+--------
+The Mythos Lab Cyber Toolbox is an advanced AI-powered cybersecurity platform
+that integrates Claude (Anthropic) and OpenAI GPT models with a suite of
+security tools for learning and authorized testing.
+
+INSTALLATION
+------------
+1. Clone the repository:
+   git clone <repo-url>
+   cd cyber-toolbox
+
+2. Install optional dependencies:
+   pip install anthropic openai flask
+
+3. Set API keys (optional, for AI features):
+   export ANTHROPIC_API_KEY=your-claude-api-key
+   export OPENAI_API_KEY=your-openai-api-key
+
+4. Run the toolbox:
+   python cyber_toolbox.py
+
+COMMAND-LINE USAGE
+------------------
+Interactive menu:
+  python cyber_toolbox.py
+
+AI chat mode:
+  python cyber_toolbox.py --chat
+
+Teach a tool or topic:
+  python cyber_toolbox.py --teach nmap
+  python cyber_toolbox.py --teach aircrack-ng
+  python cyber_toolbox.py --ai-teach "buffer overflow"
+
+Explain a cybersecurity concept:
+  python cyber_toolbox.py --explain "SQL injection"
+  python cyber_toolbox.py --explain "zero-day vulnerability"
+  python cyber_toolbox.py --explain "CVSS scoring"
+
+Analyze a log file:
+  python cyber_toolbox.py --analyze-logs /var/log/auth.log
+  python cyber_toolbox.py --analyze-logs access.log
+
+Generate a security report:
+  python cyber_toolbox.py --report
+
+Start the web interface (mobile access):
+  python cyber_toolbox.py --enable-server
+  # Then open http://<your-ip>:5000 on any device
+
+Run quick start / environment check:
+  python cyber_toolbox.py --quick-start
+
+Scenario-based learning:
+  python cyber_toolbox.py --scenario
+
+INTERACTIVE MENU OPTIONS
+------------------------
+1.  Password Strength Checker  - Analyze password strength with detailed feedback
+2.  Hash Generator             - Generate MD5, SHA-1, SHA-256, SHA-512 hashes
+3.  Network Security Tools     - Port scanner, Nmap integration, subnet helper
+4.  Wireless Security Tools    - Aircrack-ng suite integration, monitor mode
+5.  Mobile Security Tools      - APK analysis, ADB, Frida integration
+6.  Log Analysis               - Detect attacks and anomalies in log files
+7.  Report Generator           - Generate PDF/HTML/Markdown security reports
+8.  AI Cybersecurity Assistant - Interactive AI chat and teaching
+9.  Web Interface              - Browser-based UI accessible from mobile devices
+10. Teach Mode                 - AI-guided tutorials on any security topic
+11. Expert Tools               - Quick access to any tool by name
+12. Scenario-Based Learning    - Step-by-step guided security scenarios
+0.  Exit
+
+MODULES OVERVIEW
+----------------
+
+modules/password.py
+  - analyze_password(password) -> (strength, score, feedback)
+  - Scores passwords on 6 criteria: length, uppercase, lowercase, digits, symbols
+
+modules/hashing.py
+  - hash_text(text, algorithm) -> hex_digest
+  - Supports: md5, sha1, sha256, sha512
+
+modules/ai_agent.py
+  - AIAgent class with Claude and OpenAI support
+  - Methods: query(), chat(), teach_tool(), explain_topic(), analyze_log(),
+             analyze_apk_info(), generate_report_insights()
+  - Offline fallback responses when no API keys are set
+
+modules/network.py
+  - port_scan(host, ports) -> list of open ports
+  - run_nmap(target, flags)  - runs nmap if installed
+  - subnet_info(cidr)        - displays subnet details
+
+modules/wireless.py
+  - list_interfaces()         - list wireless interfaces (iwconfig)
+  - enable_monitor_mode(iface) - enables monitor mode via airmon-ng
+  - capture_packets(iface, output_file) - capture with airodump-ng
+  - Requires: sudo apt install aircrack-ng wireless-tools
+
+modules/mobile.py
+  - analyze_apk_static(apk_path) - static APK analysis (ZIP inspection + apktool)
+  - list_android_devices()       - list ADB-connected devices
+  - frida_list_apps(platform)    - list running apps via Frida
+  - Requires: adb, apktool, frida-tools
+
+modules/log_analysis.py
+  - analyze_file(file_path, ai_agent=None) -> findings dict
+  - Detects: brute force, SQL injection, XSS, path traversal, port scans, malware
+
+modules/reporting.py
+  - generate_report(title, findings, ai_insights, output_format)
+  - Formats: markdown (.md), html (.html), json (.json)
+
+modules/web_interface.py
+  - Flask web app with REST API
+  - Endpoints: /api/password, /api/hash, /api/chat, /api/learn, /api/explain
+  - Mobile-optimized dark theme UI
+
+AI FEATURES
+-----------
+The AI agent works in three modes:
+
+1. Online with Claude (Anthropic):
+   - Set ANTHROPIC_API_KEY environment variable
+   - pip install anthropic
+   - Uses claude-opus-4-5 model
+
+2. Online with OpenAI GPT:
+   - Set OPENAI_API_KEY environment variable
+   - pip install openai
+   - Uses gpt-4o model
+
+3. Offline mode (no API keys):
+   - Built-in responses for common topics: nmap, wireless, passwords, SQL injection,
+     Android APK analysis, iOS app analysis
+
+SECURITY TOOLS INTEGRATION
+---------------------------
+The toolbox integrates with these external tools (must be installed separately):
+
+Network:
+  sudo apt install nmap
+
+Wireless:
+  sudo apt install aircrack-ng wireless-tools
+
+Mobile/Android:
+  sudo apt install adb apktool
+  pip install frida-tools
+
+WEB INTERFACE
+-------------
+Start the web server:
+  python cyber_toolbox.py --enable-server
+
+Access from any device on your network:
+  http://<your-local-ip>:5000
+
+Features available in the web interface:
+  - Password strength checker with visual badges
+  - Hash generator (MD5/SHA-1/SHA-256/SHA-512)
+  - AI chat with conversation history
+  - Tool tutorials and topic explanations
+
+LEGAL DISCLAIMER
+----------------
+This toolbox is for EDUCATIONAL PURPOSES and AUTHORIZED SECURITY TESTING ONLY.
+
+- Only use network scanning tools on networks you own or have explicit written
+  permission to test.
+- Only use wireless tools on networks you own or have explicit written permission
+  to audit.
+- Only analyze mobile applications you have the right to test.
+- Log analysis should only be performed on logs you are authorized to access.
+- Always comply with applicable laws and regulations.
+
+The authors of this toolbox accept no responsibility for unauthorized or illegal
+use of these tools.
+
+================================================================================
+For issues, feature requests, or contributions, see the project repository.
+================================================================================
