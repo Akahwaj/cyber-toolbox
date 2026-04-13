@@ -16,6 +16,19 @@ MENU_ACTIONS = {
     "2": (hash_tool, "Hash Generator"),
 }
 
+# Extra fixed menu options appended after MENU_ACTIONS entries.
+# 1 = Teach Mode, 2 = Expert Tools, 3 = AI Security Agent, 4 = Exit
+_EXTRA_MENU_COUNT = 4
+
+# Highest selectable menu number, computed from MENU_ACTIONS + extras
+_MAX_MENU_OPTION = len(MENU_ACTIONS) + _EXTRA_MENU_COUNT
+
+# Option numbers for the fixed menu entries
+_TEACH_OPTION = str(len(MENU_ACTIONS) + 1)
+_EXPERT_OPTION = str(len(MENU_ACTIONS) + 2)
+_AGENT_OPTION = str(len(MENU_ACTIONS) + 3)
+_EXIT_OPTION = str(len(MENU_ACTIONS) + 4)
+
 
 def pause():
     input("\nPress Enter to return to the menu...")
@@ -89,10 +102,10 @@ def show_menu():
     print("====================================")
     for key, (_, description) in MENU_ACTIONS.items():
         print(f"{key}. {description}")
-    print("3. Teach Mode")
-    print("4. Expert Tools")
-    print("5. AI Security Agent")
-    print("6. Exit")
+    print(f"{_TEACH_OPTION}. Teach Mode")
+    print(f"{_EXPERT_OPTION}. Expert Tools")
+    print(f"{_AGENT_OPTION}. AI Security Agent")
+    print(f"{_EXIT_OPTION}. Exit")
 
 
 def main():
@@ -140,7 +153,7 @@ Examples:
     args = parser.parse_args()
 
     # If no arguments were given, fall through to the interactive menu
-    if not any([args.teach_tool, args.qa, args.walkthrough, args.contextual_explain]):
+    if not any((args.teach_tool, args.qa, args.walkthrough, args.contextual_explain)):
         _run_interactive()
         return
 
@@ -165,7 +178,7 @@ Examples:
 def _run_interactive():
     while True:
         show_menu()
-        choice = input("\nChoose an option (1-6): ").strip()
+        choice = input(f"\nChoose an option (1-{_MAX_MENU_OPTION}): ").strip()
 
         if choice in MENU_ACTIONS:
             try:
@@ -174,18 +187,18 @@ def _run_interactive():
                 print(f"\nAn error occurred while running the tool: {e}")
             pause()
 
-        elif choice == "3":
+        elif choice == _TEACH_OPTION:
             run_teach_mode()
             pause()
 
-        elif choice == "4":
+        elif choice == _EXPERT_OPTION:
             run_expert_mode()
             pause()
 
-        elif choice == "5":
+        elif choice == _AGENT_OPTION:
             run_agent_menu()
 
-        elif choice == "6":
+        elif choice == _EXIT_OPTION:
             while True:
                 confirm = input("\nAre you sure you want to exit? (yes/no): ").strip().lower()
 
@@ -199,11 +212,11 @@ def _run_interactive():
             pause()
 
         elif not choice:
-            print("\nNo option selected. Please choose a number between 1 and 6.")
+            print(f"\nNo option selected. Please choose a number between 1 and {_MAX_MENU_OPTION}.")
             pause()
 
         else:
-            print("\nInvalid choice. Please enter a number between 1 and 6.")
+            print(f"\nInvalid choice. Please enter a number between 1 and {_MAX_MENU_OPTION}.")
             pause()
 
 

