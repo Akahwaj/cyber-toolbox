@@ -1,5 +1,13 @@
-# Core (optional AI features)
+# Core (AI features)
 anthropic>=0.40.0
 openai>=1.0.0
-# Web interface
-flask>=3.0.0
+shodan
+PyYAML
+
+# Web backend
+fastapi
+uvicorn
+
+# Testing
+pytest>=7.0.0
+pytest-html
