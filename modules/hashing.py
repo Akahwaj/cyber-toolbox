@@ -1,32 +1,31 @@
 import hashlib
 
+ALGORITHMS = {
+    "1": ("MD5", "md5"),
+    "2": ("SHA-1", "sha1"),
+    "3": ("SHA-256", "sha256"),
+    "4": ("SHA-512", "sha512"),
+}
 
-# MD5 and SHA1 are cryptographically broken; they are included here for
-# legacy/learning purposes only.  Do NOT use them for password storage,
-# digital signatures, or any security-critical operation.
-ALGORITHMS = ["md5", "sha1", "sha256", "sha512"]
-
-
-def hash_text(text, algorithm="sha256"):
-    """Return hex digest for *text* using the requested *algorithm*."""
-    algorithm = algorithm.lower()
-    if algorithm not in ALGORITHMS:
-        raise ValueError(f"Unsupported algorithm: {algorithm}. Choose from {ALGORITHMS}")
+def hash_text(text, algorithm):
     h = hashlib.new(algorithm)
-    h.update(text.encode("utf-8"))
+    h.update(text.encode())
     return h.hexdigest()
-
 
 def run():
     print("\n#️⃣  Hash Generator")
     print("------------------")
     text = input("Enter text to hash: ").strip()
-
     if not text:
         print("No text entered.")
         return
-
-    print(f"\n{'Algorithm':<10}  Hash")
-    print("-" * 74)
-    for algo in ALGORITHMS:
-        print(f"{algo.upper():<10}  {hash_text(text, algo)}")
+    print("\nSelect algorithm:")
+    for key, (name, _) in ALGORITHMS.items():
+        print(f"  {key}. {name}")
+    choice = input("Choice: ").strip()
+    if choice not in ALGORITHMS:
+        print("Invalid choice.")
+        return
+    name, algo = ALGORITHMS[choice]
+    result = hash_text(text, algo)
+    print(f"\n{name}: {result}")
