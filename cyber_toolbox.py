@@ -62,6 +62,7 @@ def run_teach_mode(ai: AIExplainer):
     elif "hash" in task:
         print("\n[Teach Mode]")
         print("This tool generates hashes such as MD5, SHA1, and SHA256 for learning and verification.")
+        print(ai.explain_tool_output("hash generator"))
         try:
             hash_tool()
         except Exception as e:
@@ -175,11 +176,15 @@ def run_ai_mode(ai: AIExplainer):
     elif choice == "5":
         print("Paste log data or describe the threat (end with an empty line):")
         lines = []
-        while True:
-            line = input()
-            if not line:
-                break
-            lines.append(line)
+        try:
+            while True:
+                line = input()
+                if not line:
+                    break
+                lines.append(line)
+        except (EOFError, KeyboardInterrupt):
+            print("\nThreat analysis cancelled.")
+            return
         print(ai.analyze_threat("\n".join(lines)))
 
     elif choice == "6":
@@ -283,9 +288,18 @@ def main():
         action="store_true",
         help="Start the interactive NLP chat interface.",
     )
+    parser.add_argument(
+        "--no-openai",
+        action="store_true",
+        help=(
+            "Force offline mode: use the built-in knowledge base only, "
+            "even when OPENAI_API_KEY is set. "
+            "Recommended when processing sensitive data such as log files."
+        ),
+    )
 
     args = parser.parse_args()
-    ai = AIExplainer()
+    ai = AIExplainer(offline=args.no_openai)
 
     # Handle non-interactive CLI flags
     if args.ai_explain:
@@ -317,12 +331,29 @@ def main():
         else:
             print("Paste log data (end with an empty line):")
             lines = []
-            while True:
-                line = input()
-                if not line:
-                    break
-                lines.append(line)
+            try:
+                while True:
+                    line = input()
+                    if not line:
+                        break
+                    lines.append(line)
+            except (EOFError, KeyboardInterrupt):
+                print("\nThreat analysis cancelled.")
+                sys.exit(0)
             log_data = "\n".join(lines)
+        if ai._use_openai:
+            print(
+                "\n⚠️  Privacy notice: Log contents will be sent to the OpenAI API "
+                "for analysis.\n"
+                "   Use --no-openai to analyse locally instead."
+            )
+            try:
+                confirm = input("   Continue? (yes/no): ").strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                confirm = "no"
+            if confirm not in ("yes", "y"):
+                print("Cancelled. Re-run with --no-openai for offline analysis.")
+                sys.exit(0)
         print(ai.analyze_threat(log_data))
         sys.exit(0)
 

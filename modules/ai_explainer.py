@@ -258,6 +258,92 @@ _TOOL_KB = {
             "Use only in authorised lab environments — deauth attacks are detectable.",
         ],
     },
+    "suricata": {
+        "description": "Suricata is a high-performance open-source Network IDS/IPS/NSM engine.",
+        "reading_tips": [
+            "Alert severity levels (1=critical, 4=informational) guide triage priority.",
+            "EVE JSON logs provide rich, structured event data for SIEM ingestion.",
+            "Flow records help identify unusual connection volumes or long-lived sessions.",
+            "Protocol anomalies detected (e.g. HTTP on non-standard ports) may indicate tunnelling.",
+        ],
+        "next_steps": [
+            "Block source IPs generating critical alerts at the perimeter firewall.",
+            "Feed EVE JSON into an ELK or SIEM stack for correlation.",
+            "Keep rule sets (ET Open, ET Pro) regularly updated.",
+            "Tune noisy rules to reduce false positives.",
+        ],
+    },
+    "hashcat": {
+        "description": "Hashcat is a GPU-accelerated offline password hash cracking tool.",
+        "reading_tips": [
+            "STATUS=Cracked means the plaintext password has been recovered.",
+            "Hash mode (-m) must match the algorithm used (e.g. 0=MD5, 1000=NTLM, 1800=sha512crypt).",
+            "Speed (H/s) depends heavily on GPU power and hash algorithm complexity.",
+            "Potfile stores already-cracked hashes so sessions can resume without re-cracking.",
+        ],
+        "next_steps": [
+            "Force password resets for all recovered accounts immediately.",
+            "Switch to strong adaptive hashing (bcrypt, Argon2) to resist future attacks.",
+            "Enforce minimum password length of 12+ characters and MFA.",
+        ],
+    },
+    "openvas": {
+        "description": "OpenVAS (Greenbone Vulnerability Manager) is an open-source comprehensive vulnerability scanner.",
+        "reading_tips": [
+            "Severity scores (CVSS) rank findings from Critical (9-10) down to Log.",
+            "Quality of Detection (QoD) values show how confident OpenVAS is in each result.",
+            "False positives are common — verify high-severity findings manually.",
+        ],
+        "next_steps": [
+            "Prioritise Critical and High findings for immediate remediation.",
+            "Apply vendor patches; re-scan after remediation to confirm fixes.",
+            "Schedule regular authenticated scans for continuous coverage.",
+        ],
+    },
+    "lynis": {
+        "description": "Lynis is an open-source security auditing tool for Unix-based systems.",
+        "reading_tips": [
+            "Hardening Index score (0-100) gives a quick system security baseline.",
+            "Warnings (!) require immediate attention; Suggestions are best-practice improvements.",
+            "Plugin and test categories (Authentication, Networking, etc.) group related findings.",
+        ],
+        "next_steps": [
+            "Address all Warnings before moving to Suggestions.",
+            "Apply OS hardening guides (CIS Benchmarks) to improve the Hardening Index.",
+            "Integrate Lynis into your CI/CD pipeline to catch regressions.",
+        ],
+    },
+    "ossec": {
+        "description": "OSSEC is an open-source Host-based Intrusion Detection System (HIDS).",
+        "reading_tips": [
+            "Alert level (1-15) indicates severity; levels 7+ typically require review.",
+            "Rule IDs map to the OSSEC ruleset documentation for details.",
+            "Repeated alerts from the same agent may indicate active compromise or misconfiguration.",
+        ],
+        "next_steps": [
+            "Investigate agents generating repeated high-level alerts.",
+            "Configure active-response rules to automatically block malicious IPs.",
+            "Tune custom rules to reduce noise from legitimate administrative activity.",
+        ],
+    },
+    "hash generator": {
+        "description": (
+            "A hash generator produces a fixed-length digest from input data using algorithms "
+            "such as MD5, SHA1, SHA256, or SHA512. Hashes are one-way functions used for "
+            "data integrity checks and (with strong algorithms) password storage."
+        ),
+        "reading_tips": [
+            "MD5 and SHA1 are cryptographically broken — do NOT use them for security purposes.",
+            "SHA256 and SHA512 are safe for data integrity checks.",
+            "Identical inputs always produce identical hashes (deterministic).",
+            "Even a 1-bit change in input produces a completely different hash (avalanche effect).",
+        ],
+        "next_steps": [
+            "Use SHA256 or SHA512 for file integrity verification.",
+            "Use bcrypt, scrypt, or Argon2 (not SHA256/SHA512) for password storage.",
+            "Compare hashes before and after file transfer to detect tampering.",
+        ],
+    },
 }
 
 _WALKTHROUGH_KB = {
@@ -379,17 +465,31 @@ class AIExplainer:
     When OpenAI is available and ``OPENAI_API_KEY`` is set the class delegates
     queries to the GPT model.  Otherwise it answers from the built-in
     knowledge base so users can work offline.
+
+    Pass ``offline=True`` to force the built-in knowledge base even when
+    ``OPENAI_API_KEY`` is set (e.g. when analysing sensitive log files).
     """
 
     MODEL = "gpt-4o-mini"
 
-    def __init__(self):
+    def __init__(self, *, offline: bool = False):
+        self._openai_client = None
+        self._use_openai = False
+        if offline:
+            return
         api_key = os.environ.get("OPENAI_API_KEY", "").strip()
         if _OPENAI_AVAILABLE and api_key:
-            _openai.api_key = api_key
-            self._use_openai = True
-        else:
-            self._use_openai = False
+            try:
+                if hasattr(_openai, "OpenAI"):
+                    # openai >= 1.0.0 — instantiate the client
+                    self._openai_client = _openai.OpenAI(api_key=api_key)
+                else:
+                    # openai < 1.0.0 — module-level api_key assignment
+                    _openai.api_key = api_key
+                    self._openai_client = _openai
+                self._use_openai = True
+            except Exception:
+                self._use_openai = False
 
     # ------------------------------------------------------------------
     # Public API
@@ -404,7 +504,9 @@ class AIExplainer:
                 f"is dangerous, and at least four concrete remediation steps. "
                 + (f"Additional context: {context}" if context else "")
             )
-            return self._query_openai(prompt)
+            result = self._query_openai(prompt)
+            if result is not None:
+                return result
 
         key = vuln_name.lower().strip()
         for kb_key, info in _VULNERABILITY_KB.items():
@@ -433,7 +535,9 @@ class AIExplainer:
                 f"Explain the following tool output in plain English, highlight "
                 f"security concerns, and suggest next steps:\n\n{output}"
             )
-            return self._query_openai(prompt)
+            result = self._query_openai(prompt)
+            if result is not None:
+                return result
 
         key = tool_name.lower().strip()
         for kb_key, info in _TOOL_KB.items():
@@ -462,11 +566,13 @@ class AIExplainer:
                 "You are a senior penetration tester. Provide a detailed, "
                 f"numbered step-by-step walkthrough for: {topic}"
             )
-            return self._query_openai(prompt)
+            result = self._query_openai(prompt)
+            if result is not None:
+                return result
 
         key = topic.lower().strip()
         for kb_key, content in _WALKTHROUGH_KB.items():
-            if any(word in key for word in kb_key.split()):
+            if kb_key in key:
                 return "\n" + content
 
         return (
@@ -486,7 +592,9 @@ class AIExplainer:
                 "and suggest immediate response actions:\n\n"
                 + log_input
             )
-            return self._query_openai(prompt)
+            result = self._query_openai(prompt)
+            if result is not None:
+                return result
 
         # Simple pattern-based heuristics
         findings = []
@@ -528,11 +636,13 @@ class AIExplainer:
         if self._use_openai:
             prompt = (
                 "You are a penetration testing expert. The user wants to: "
-                f"'{goal}'. Recommend the best open-source tools and outline "
-                "a step-by-step methodology, including both offensive and "
+                f"'{goal}'. Recommend the best security tools (open-source and commercial) "
+                "and outline a step-by-step methodology, including both offensive and "
                 "defensive considerations."
             )
-            return self._query_openai(prompt)
+            result = self._query_openai(prompt)
+            if result is not None:
+                return result
 
         lower = goal.lower()
         lines = [f"\n🎯 Tool Recommendations for: {goal}", "=" * 50]
@@ -688,10 +798,10 @@ class AIExplainer:
             "Or set OPENAI_API_KEY for full natural-language support."
         )
 
-    def _query_openai(self, prompt: str) -> str:
-        """Send *prompt* to the OpenAI API and return the response text."""
+    def _query_openai(self, prompt: str):
+        """Send *prompt* to the OpenAI API and return the response text, or None on failure."""
         try:
-            response = _openai.chat.completions.create(
+            response = self._openai_client.chat.completions.create(
                 model=self.MODEL,
                 messages=[
                     {
@@ -709,7 +819,9 @@ class AIExplainer:
             )
             return "\n" + response.choices[0].message.content.strip()
         except Exception as exc:
-            return (
-                f"\n⚠️  OpenAI request failed ({type(exc).__name__}: {exc})\n"
-                "Falling back to built-in knowledge base."
+            print(
+                f"\n⚠️  OpenAI request failed ({type(exc).__name__}: {exc}). "
+                "Using built-in knowledge base."
             )
+            self._use_openai = False
+            return None
