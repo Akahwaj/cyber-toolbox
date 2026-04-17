@@ -491,6 +491,10 @@ class AIExplainer:
             except Exception:
                 self._use_openai = False
 
+    def is_online_mode(self) -> bool:
+        """Return True if OpenAI is configured and will be used for responses."""
+        return self._use_openai
+
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
@@ -571,6 +575,9 @@ class AIExplainer:
                 return result
 
         key = topic.lower().strip()
+        # Full-key substring match: the entire KB key (e.g. "harden apache") must
+        # appear within the user topic.  This avoids partial-word false matches such
+        # as "harden nginx" incorrectly matching the "harden apache" entry.
         for kb_key, content in _WALKTHROUGH_KB.items():
             if kb_key in key:
                 return "\n" + content

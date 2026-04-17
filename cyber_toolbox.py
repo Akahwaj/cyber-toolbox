@@ -341,7 +341,7 @@ def main():
                 print("\nThreat analysis cancelled.")
                 sys.exit(0)
             log_data = "\n".join(lines)
-        if ai._use_openai:
+        if ai.is_online_mode():
             print(
                 "\n⚠️  Privacy notice: Log contents will be sent to the OpenAI API "
                 "for analysis.\n"
